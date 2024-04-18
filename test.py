@@ -29,7 +29,7 @@ db = database['db']
 dbHost=database['host']
 dbUser=database['user']
 dbPass=database['pass']
-app.secret_key = database['key'] 
+app.secret_key = database['key']
 cnx = mysql.connector.connect(user=dbUser, password = dbPass, host= dbHost, database= db)
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -46,7 +46,7 @@ def login():
                 with conn.cursor() as cursor:
                     cursor.execute("SELECT password_hash FROM contactsTable WHERE name = %s", (username,))
                     user = cursor.fetchone()
-                    
+
             if user and check_password_hash(user[0], password):
                 session['username'] = username
                 return redirect(url_for('index'))
@@ -72,32 +72,42 @@ def index():
     bodyText = Markup("""
     <br>
     <h1>We love all things about cats!</h1>
-    <br>
-    <hr>
-    <br>1.<a href=/catAge class="button-link"> Cat Age to Human Age</a><br>
-    <br>2.<a href=/catName class="button-link"> Cat Name Generator </a><br>
-    <br>3.<a href=/randomMovie class="button-link"> Cat Movie Generator</a><br>
-    <br>4.<a href=/aboutCat class="button-link"> About Cats </a><br>
-    </br>""")
-    
+    <nav>
+      <ul>
+        <li><a href="/convert" class="button-link">Calculate Cat Age in Human Years</a></li>
+        <li><a href="/catName" class="button-link">Find the Perfect Cat Name</a></li>
+        <li><a href="/randomMovie" class="button-link">Get a Random Cat Movie Suggestion</a></li>
+        <li><a href="/aboutCat" class="button-link">Learn More About Cats</a></li>
+      </ul>
+    </nav>
+
+    """)
+
     return render_template('template.html', titleText=titleText, bodyText=bodyText)
 
-@app.route('/catAge')
-def catAge():
-	titleText="How old is your cat in human years?"
-	bodyText=  Markup("""
-	If your cat is blank years old, then it is blank human years old
-	<br>
+@app.route('/convert', methods=['GET', 'POST'])
+def convert():
+    if request.method == 'POST':
+        age = int(request.form['age'])
+        if age == 1:
+            human_age = 15
+        elif age == 2:
+            human_age = 24
+        else:
+            human_age = 21 + (age - 2) * 4
 
-	<br>
-	
-	</br>""")
-	return render_template('template.html',titleText=titleText,bodyText=bodyText)
+        titleText = "Conversion Result"
+        bodyText = f"Your Cat's age in human years is = {human_age}"
+        return render_template('convert.html', titleText=titleText, bodyText=bodyText)
+
+    return render_template('convert.html', titleText="Convert Cat Age", bodyText="Please select your cat's age from the dropdown menu.")
+
+
 @app.route('/white')
 def whiteName():
     cursor = cnx.cursor()
     titleText = "White Cat Names"
-    bodyText = Markup("<table><tr><td> Names: </td><td><br>")
+    bodyText = Markup("<table><tr><td> For your purrfect snow-white pals, a name that's simply purrfection. <br><br> Names: </td><td><br>")
     query = '''select name from nameTable AS n join colorTable AS c ON n.colorid = c.id where c.colordesc = 'white' '''
     cursor.execute(query)
     for row in cursor:
@@ -112,11 +122,12 @@ def whiteName():
     </br>
     ''')
     return render_template('template.html',titleText=titleText,bodyText=bodyText)
+
 @app.route('/orange')
 def orangeName():
     cursor = cnx.cursor()
     titleText = "Orange Cat Names"
-    bodyText = Markup("<table><tr><td> Names: </td><td><br>")
+    bodyText = Markup("<table><tr><td> For your purrfect sunshine pals, a name that's simply divine. <br><br> Names: </td><td><br>")
     query = '''select name from nameTable AS n join colorTable AS c ON n.colorid = c.id where c.colordesc = 'orange' '''
     cursor.execute(query)
     for row in cursor:
@@ -131,11 +142,12 @@ def orangeName():
     </br>
     ''')
     return render_template('template.html', titleText=titleText, bodyText=bodyText)
+
 @app.route('/black')
 def blackName():
     cursor = cnx.cursor()
     titleText = "Black Cat Names"
-    bodyText = Markup("<table><tr><td> Names: </td><td><br>")
+    bodyText = Markup("<table><tr><td> For your purrfect shadowy pals, a name that's as mysterious as the night! <br><br> Names: </td><td><br>")
     query = '''select name from nameTable AS n join colorTable AS c ON n.colorid = c.id where c.colordesc = 'black' '''
     cursor.execute(query)
     for row in cursor:
@@ -150,11 +162,12 @@ def blackName():
     </br>
     ''')
     return render_template('template.html',titleText=titleText,bodyText=bodyText)
+
 @app.route('/gray')
 def grayName():
     cursor = cnx.cursor()
     titleText = "Gray Cat Names"
-    bodyText = Markup("<table><tr><td> Names: </td><td><br>")
+    bodyText = Markup("<table><tr><td> For your purrfect misty pals, a name as soft as the morning fog! <br><br> Names: </td><td><br>")
     query = '''select name from nameTable AS n join colorTable AS c ON n.colorid = c.id where c.colordesc = 'gray' '''
     cursor.execute(query)
     for row in cursor:
@@ -175,7 +188,7 @@ def brownName():
     titleText = "Brown Cat Names"
     cursor = cnx.cursor()
     titleText = "Brown Cat Names"
-    bodyText = Markup("<table><tr><td> Names: </td><td><br>")
+    bodyText = Markup("<table><tr><td> For your purrfect caramel-coated pals, a name as sweet as honey! <br><br> Names: </td><td><br>")
     query = '''select name from nameTable AS n join colorTable AS c ON n.colorid = c.id where c.colordesc = 'brown' '''
     cursor.execute(query)
     for row in cursor:
@@ -190,23 +203,24 @@ def brownName():
     </br>
     ''')
     return render_template('template.html',titleText=titleText,bodyText=bodyText)
+
 @app.route('/catName')
 def catName():
 	titleText="Choose Your Cat Name"
 	bodyText= Markup(""".
 	<br>
 	<br>
-    Please select the color of your cat:<br><br>
-    <a href=/white>white</a>
+    Looking for a name that's simply purrfection? Look no futher for your purrfect pals! <br><br> Please select the color of your cat:<br><br>
+    <a href=/white>White</a>
     <br>
-    <a href=/orange>orange</a>
+    <a href=/orange>Orange</a>
     <br>
-    <a href=/black>black</a>
+    <a href=/black>Black</a>
     <br>
-    <a href=/gray>gray</a>
+    <a href=/gray>Gray</a>
     <br>
-    <a href=/brown>brown</a>
-    
+    <a href=/brown>Brown</a>
+
 	</br>""")
 	return render_template('template.html',titleText=titleText,bodyText=bodyText)
 
@@ -228,7 +242,7 @@ def randomMovie():
 
     bodyText = bodyText + Markup("""
     <br>
-    
+
     </br>""")
 
     return render_template('template.html', titleText=titleText, bodyText=bodyText)
@@ -238,42 +252,41 @@ def randomMovie():
 def aboutCat():
 	titleText = "About Cats"
 	bodyText= Markup("""
-	10 Cool Facts About Cats:
-	<br>
-    <br>
-    <br>
-1. Whisker Navigation: A cat's whiskers are about as wide as its body, helping it navigate through tight spaces.They're extremely<br> sensitive and help cats detect changes in their environment.
-<br>
-<br>
-2. Purring: Cats not only purr when they're content but also when they're injured or stressed. Some researchers believe purring<br> can have healing properties and can help lower stress levels in both cats and humans.
-<br>
-<br>
-3. Feline Agility: Cats are incredibly agile creatures.They have a flexible backbone and lack a collarbone, allowing them to twist<br>and contort their bodies in remarkable ways.
-<br>
-<br>
-4. Communication through Tail: A cat's tail is a significant indicator of its mood. A flicking or twitching tail might mean irritation<br> or excitement, while a tucked tail could signify fear or submission.
-<br>
-<br>
-5. Superior Night Vision: Cats have excellent night vision, about six times better than that of humans.Their eyes contain more<br>rods, specialized cells that work well in low light.
-<br>
-<br>
-6. No Sweet Tooth: Cats lack taste receptors for sweetness. That's why they're not interested in sugary treats like humans are.
-<br>
-<br>
-7. Self-Cleaning Experts: Cats spend about a third of their waking hours grooming themselves. Their tongues have tiny hook-like <br>structures that help remove dirt and loose fur.
-<br>
-<br>
-8. Unique Nose Prints: Like human fingerprints, a cat's nose print is unique to that cat. It can be used for identification,<br> just like a fingerprint for humans.
-<br>
-<br>
-9. Napping Experts: Cats are known for their love of napping.\nOn average, they sleep for about 12-16 hours a day, with some cats<br> sleeping up to 20 hours!
-<br>
-<br>
-10. Unusual Water Preference: Unlike most animals, many cats dislike getting their fur wet. This aversion to water is thought to be<br>because their coats don't dry easily, making them feel uncomfortable.
-<br>
-<br>
-	
-	</br>""")
+    <h1>10 Cool Facts About Cats</h1>
+
+    <ol>
+      <li>
+        <strong>Whisker Navigation:</strong> A cat's whiskers are about as wide as its body, helping it navigate through tight spaces. They're extremely sensitive and help cats detect changes in their environment.
+      </li>
+      <li>
+        <strong>Purring:</strong> Cats not only purr when they're content but also when they're injured or stressed. Some researchers believe purring can have healing properties and can help lower stress levels in both cats and humans.
+      </li>
+      <li>
+        <strong>Feline Agility:</strong> Cats are incredibly agile creatures. They have a flexible backbone and lack a collarbone, allowing them to twist and contort their bodies in remarkable ways.
+      </li>
+      <li>
+        <strong>Communication through Tail:</strong> A cat's tail is a significant indicator of its mood. A flicking or twitching tail might mean irritation or excitement, while a tucked tail could signify fear or submission.
+      </li>
+      <li>
+        <strong>Superior Night Vision:</strong> Cats have excellent night vision, about six times better than that of humans. Their eyes contain more rods, specialized cells that work well in low light.
+      </li>
+      <li>
+        <strong>No Sweet Tooth:</strong> Cats lack taste receptors for sweetness. That's why they're not interested in sugary treats like humans are.
+      </li>
+      <li>
+        <strong>Self-Cleaning Experts:</strong> Cats spend about a third of their waking hours grooming themselves. Their tongues have tiny hook-like structures that help remove dirt and loose fur.
+      </li>
+      <li>
+        <strong>Unique Nose Prints:</strong> Like human fingerprints, a cat's nose print is unique to that cat. It can be used for identification, just like a fingerprint for humans.
+      </li>
+      <li>
+        <strong>Napping Experts:</strong> Cats are known for their love of napping. On average, they sleep for about 12-16 hours a day, with some cats sleeping up to 20 hours!
+      </li>
+      <li>
+        <strong>Unusual Water Preference:</strong> Unlike most animals, many cats dislike getting their fur wet. This aversion to water is thought to be because their coats don't dry easily, making them feel uncomfortable.
+      </li>
+    </ol>
+  """)
 	return render_template('template.html', titleText = titleText, bodyText = bodyText)
 
 
